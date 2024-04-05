@@ -14,6 +14,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 env:
   VYOS_URL: https://github.com/vyos/vyos-build
   VYOS_BRANCH: sagitta
@@ -183,7 +187,7 @@ jobs:
         working-directory: vyos-build/packages/linux-kernel
         if: steps.generate-kernel-config.outputs.kconfig-changed == 'true'
         run: |
-          sed -i 's/\/drivers\/net//g' build-linux-firmware.sh 
+          sed -i 's/\/drivers\/net//g' build-linux-firmware.sh
           ./build-linux-firmware.sh
 
       - name: Compile Accel-PPP out-of-tree module
