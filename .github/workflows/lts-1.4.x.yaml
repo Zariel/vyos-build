@@ -132,6 +132,7 @@ jobs:
       - name: Generate kernel config
         id: generate-kernel-config
         run: |
+          set -euxo pipefail
           # Define paths and variables
           ORIGINAL_CONFIG=vyos-build/packages/linux-kernel/arch/x86/configs/vyos_defconfig
           TARGET_CONFIG=vyos-build/packages/linux-kernel/linux/arch/x86/configs/vyos_defconfig
@@ -147,16 +148,16 @@ jobs:
           if [ $? -eq 0 ]; then
             echo "Merge completed successfully."
             # check that all config fragments were applied
-            for fragment in "${CONFIG_FRAGMENTS[@]}"; do
+            for file in "${CONFIG_FRAGMENTS[@]}"; do
               while read -r line; do
                 if [[ $line == \#* ]]; then
                   continue
                 fi
                 if ! grep -qF "$line" newconfig; then
-                  echo "$line from $(basename $fragment) was not applied."
+                  echo "$line from $(basename $file) was not applied."
                   exit 1
                 fi
-              done < "$fragment"
+              done < "$file"
             done
             # Copy newconfig to ORIGINAL_CONFIG if TARGET_CONFIG doesn't exist or configs differ
             if [ ! -f "$TARGET_CONFIG" ] || ! diff -q "$TARGET_CONFIG" "newconfig" > /dev/null; then
