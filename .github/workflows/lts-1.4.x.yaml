@@ -193,6 +193,7 @@ jobs:
         if: steps.generate-kernel-config.outputs.kconfig-changed == 'true'
         run: |
           sudo ./build-kernel.sh
+          sudo make -C packages/linux-kernel/ mrproper
 
       - name: Compile linux firmware
         working-directory: vyos-build/packages/linux-kernel
