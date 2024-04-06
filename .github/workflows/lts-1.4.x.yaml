@@ -30,6 +30,8 @@ env:
   SOPS_VERSION: v3.8.1
   # renovate: datasource=github-releases depName=p3lim/vyaml
   VYAML_VERSION: 0.2.6
+  # renovate: datasource=github-releases depName=cilium/pwru
+  PWRU_VERSION: v1.0.5
 
 jobs:
   release:
@@ -105,6 +107,15 @@ jobs:
           repository: p3lim/vyaml
           latest: false
           tag: ${{ env.VYAML_VERSION }}
+          fileName: "*amd64.deb"
+          out-file-path: vyos-build/packages
+
+      - name: Download pwru
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: cilium/pwru
+          latest: false
+          tag: ${{ env.PWRU_VERSION }}
           fileName: "*amd64.deb"
           out-file-path: vyos-build/packages
 
