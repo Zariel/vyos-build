@@ -19,7 +19,7 @@ defaults:
     shell: bash
 
 env:
-  VYOS_URL: https://github.com/vyos/vyos-build
+  VYOS_URL: https://github.com/dd010101/vyos-build.git
   VYOS_BRANCH: sagitta
   VYOS_ARCH: amd64
   VYOS_BUILD_BY: autobuild-vyos@whydontyou.work
@@ -98,24 +98,6 @@ jobs:
           repository: getsops/sops
           latest: false
           tag: ${{ env.SOPS_VERSION }}
-          fileName: "*amd64.deb"
-          out-file-path: vyos-build/packages
-
-      - name: Download vyaml deb
-        uses: robinraju/release-downloader@v1.9
-        with:
-          repository: p3lim/vyaml
-          latest: false
-          tag: ${{ env.VYAML_VERSION }}
-          fileName: "*amd64.deb"
-          out-file-path: vyos-build/packages
-
-      - name: Download pwru
-        uses: robinraju/release-downloader@v1.9
-        with:
-          repository: cilium/pwru
-          latest: false
-          tag: ${{ env.PWRU_VERSION }}
           fileName: "*amd64.deb"
           out-file-path: vyos-build/packages
 
@@ -271,6 +253,10 @@ jobs:
             ln -sf linux-kernel/$package ..
           done
 
+      - name: fetch gpg key
+        shell: bash
+        run: wget https://vyos.tnyzeq.icu/apt/apt.gpg.key -O /tmp/apt.gpg.key
+
       - name: Build vyos Image
         working-directory: vyos-build
         shell: bash
@@ -282,6 +268,8 @@ jobs:
               --build-type ${{ env.VYOS_BUILD_TYPE }} \
               --build-comment "VyOS with additional packages and custom kernel" \
               --version ${{ steps.vars.outputs.tag-name }} \
+              --vyos-mirror "https://vyos.tnyzeq.icu/apt/sagitta" \
+              --custom-apt-key /opt/apt.gpg.key \
               --custom-package "git" \
               --custom-package "iptables" \
               --custom-package "jo" \
@@ -289,7 +277,6 @@ jobs:
               --custom-package "moreutils" \
               --custom-package "python3-venv" \
               --custom-package "tree" \
-              --custom-package "vyaml" \
               --custom-package "sops" \
               --custom-package "age"
           ls -l build/
