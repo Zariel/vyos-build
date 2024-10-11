@@ -15,13 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VYOS_URL: https://github.com/vyos/vyos-build
+  VYOS_URL: https://github.com/dd010101/vyos-build
   VYOS_BRANCH: sagitta
   VYOS_ARCH: amd64
   VYOS_BUILD_BY: autobuild-vyos@whydontyou.work
   VYOS_BUILD_TYPE: release
   # renovate: datasource=github-tags depName=vyos/vyos-build
-  VYOS_TAG: 1.4.0-epa2
+  VYOS_TAG: 1.4.0
   # renovate: datasource=github-releases depName=getsops/sops
   SOPS_VERSION: v3.8.1
   # renovate: datasource=github-releases depName=p3lim/vyaml
@@ -103,6 +103,10 @@ jobs:
           tag: ${{ env.VYAML_VERSION }}
           fileName: "*amd64.deb"
           out-file-path: vyos-build/packages
+
+      - name: Fetch GPG key for APT
+        shell: bash
+        run: wget https://vyos.tnyzeq.icu/apt/apt.gpg.key -O /opt/apt.gpg.key
 
       - name: Restore cached kernel and module sources
         id: cache-kernel-restore
@@ -253,6 +257,8 @@ jobs:
               --build-type ${{ env.VYOS_BUILD_TYPE }} \
               --build-comment "VyOS with additional packages and custom kernel" \
               --version ${{ steps.vars.outputs.tag-name }} \
+              --vyos-mirror "https://vyos.tnyzeq.icu/apt/sagitta" \
+              --custom-apt-key /opt/apt.gpg.key \
               --custom-package "git" \
               --custom-package "iptables" \
               --custom-package "jo" \
@@ -304,4 +310,4 @@ jobs:
         with:
           name: VYOS_LTS_${{ steps.version.outputs.vyos-version-sanitized }}_BUILD
           token: ${{ steps.app-token.outputs.token }}
-          amount: -1  
+          amount: -1
